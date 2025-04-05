@@ -68,8 +68,8 @@ def classify_image(image_path):
 
     with torch.no_grad():
         output = model(image)
-        _, predicted_idx = output.max(1)  # 获取最高置信度类别索引
-        predicted_class = imagenet_classes[predicted_idx]  # 映射到 ImageNet 类别
+        _, predicted_idx = output.max(1)
+        predicted_class = imagenet_classes[predicted_idx]
 
     return predicted_class
 
@@ -82,8 +82,8 @@ def process_image(image_path):
 
     # Brightness
     b_mean = Brightness.mean(img)
-    b_y = Brightness.y_channel(img)
-    b_hsv = Brightness.hsv_value_mean(img)
+    b_y = Brightness.YUV(img)
+    b_hsv = Brightness.HSV(img)
 
     # Sharpness
     s_lap = Sharpness.laplacian(img)
@@ -128,7 +128,7 @@ def save_results():
     df = pd.DataFrame(results)
     excel_path = os.path.join("results.xlsx")
     df.to_excel(excel_path, index=False)
-    print(f"✅ Results saved to: {excel_path}")
+    print(f"Results saved to: {excel_path}")
 
     # Visualizations
     sns.set(style="whitegrid")
