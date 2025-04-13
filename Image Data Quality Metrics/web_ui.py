@@ -2,7 +2,6 @@ from flask import Flask, render_template, Response, request, jsonify
 import cv2
 import threading
 import time
-import numpy as np
 from Adjuster import ImageParameterAdjuster
 from main import classify_image
 from PIL import Image
@@ -11,9 +10,8 @@ app = Flask(__name__)
 lock = threading.Lock()
 
 IMG_SIZE = (640, 480)
-REFRESH_RATE = 0.1  # 秒
+REFRESH_RATE = 0.1
 
-# 处理配置
 PROCESSORS = {
     "original": {"params": {}, "controls": []},
     "low_light": {
@@ -34,7 +32,6 @@ PROCESSORS = {
     },
 }
 
-# 共享状态
 current_data = {
     name: {"frame": None, "prediction": "N/A", "params": config["params"].copy()}
     for name, config in PROCESSORS.items()
@@ -90,12 +87,12 @@ def update_params():
 def image_processor():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        raise RuntimeError("无法打开摄像头")
+        raise RuntimeError("Cannot open the Camera")
 
     while True:
         ret, base_image = cap.read()
         if not ret:
-            print("摄像头读取失败")
+            print("Failed to read image")
             continue
         base_image = cv2.resize(base_image, IMG_SIZE)
         start_time = time.time()
