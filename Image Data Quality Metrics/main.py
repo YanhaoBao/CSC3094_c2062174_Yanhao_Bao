@@ -153,6 +153,8 @@ def apply_parameter_adjustments(image_path, adjustment_params):
     base_name = os.path.splitext(os.path.basename(image_path))[0]
     if "brightness" in adjustment_params:
         base_name += f"_bright_{adjustment_params['brightness']:.2f}"
+    if "contrast" in adjustment_params:
+        base_name += f"_contrast_{adjustment_params['contrast']:.2f}"
     if "gaussian_blur" in adjustment_params:
         base_name += f"_blur_{adjustment_params['gaussian_blur']}"
     if "color_balance" in adjustment_params:
