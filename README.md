@@ -73,31 +73,33 @@ This project analyzes various image quality metrics and provides tools for evalu
 ## Project Structure
 
 ```
-Image Data Quality Metrics/
-├── Metrics/                  # Modules for calculating individual metrics
-│   ├── Brightness.py
-│   ├── Color.py
-│   ├── Contrast.py
-│   ├── Sharpness.py
-│   ├── PSNR.py
-│   ├── SSIM.py
-│   └── ...
-├── data/                     # Data directory (e.g., for datasets like ImageNet)
-│   └── ILSVRC2012_img_val/
-├── adjusted_images/          # Output directory for adjusted images from main.py
-├── results/                  # Output directory for main.py results (Excel, visualizations)
-│   └── visualizations/
-├── Metrics Validation results/ # Output directory for evaluate_metrics.py results
-│   └── results/
-│       └── metric_evaluations_avg/
-├── templates/                # HTML templates for the web UI
-│   └── webCamera.html
-├── test/                     # Potential directory for unit tests
-├── Adjuster.py               # Class for applying image parameter adjustments
-├── evaluate_metrics.py       # Script to evaluate metric performance
-├── LiveCamera.py             # Script for simple live camera view with metrics
-├── main.py                   # Main script for batch processing and analysis
-├── requirements.txt          # Project dependencies
-├── web_ui.py                 # Flask application for the interactive web UI
-└── README.md                 # This file
+    Image Data Quality Metrics/
+    ├── Metrics/                  # Modules for calculating individual metrics
+    │   ├── Brightness.py
+    │   ├── Color.py
+    │   ├── Contrast.py
+    │   ├── Sharpness.py
+    │   ├── PSNR.py
+    │   ├── SSIM.py
+    │   └── ...
+    ├── data/                     # Data directory (e.g., for datasets like ImageNet)
+    │   └── ILSVRC2012_img_val/
+    ├── adjusted_images/          # Output directory for adjusted images from main.py
+    ├── results/                  # Output directory for main.py results (Excel, visualizations)
+    │   └── visualizations/
+    ├── Metrics Validation results/ # Output directory for evaluate_metrics.py results
+    │   └── results/
+    │       └── metric_evaluations_avg/
+    ├── templates/                # HTML templates for the web UI
+    │   └── webCamera.html
+    ├── test/                     # Potential directory for unit tests
+    ├── Adjuster.py               # Class for applying image parameter adjustments
+    ├── evaluate_metrics.py       # Script to evaluate metric performance
+    ├── LiveCamera.py             # Script for simple live camera view with metrics
+    ├── main.py                   # Main script for batch processing and analysis
+    ├── web_ui.py                 # Flask application for the interactive web UI
+    │ 
+    README.md                 # This file
+    │
+    requirements.txt          # Project dependencies
 ``` 
