@@ -37,13 +37,26 @@ response = requests.get(imagenet_classes_url)
 imagenet_classes = response.text.split("\n")
 imagenet_classes = [line.strip() for line in imagenet_classes if line.strip()]
 
-def classify_image(image_path):
-    """Use ResNet50 model to classify an image."""
-    # Convert image path to PIL Image
-    try:
-        pil_img = Image.open(image_path).convert('RGB')
-    except Exception as e:
-        print(f"Error opening image {image_path}: {e}")
+def classify_image(image_path_or_object):
+    """Use ResNet50 model to classify an image, accepting a path or PIL Image object."""
+    pil_img = None
+    if isinstance(image_path_or_object, str):
+        # Input is a path string
+        try:
+            pil_img = Image.open(image_path_or_object).convert('RGB')
+        except Exception as e:
+            print(f"Error opening image path {image_path_or_object}: {e}")
+            # If path loading fails, pil_img remains None
+    elif isinstance(image_path_or_object, Image.Image):
+        # Input is already a PIL Image object
+        pil_img = image_path_or_object
+    else:
+        # Invalid input type
+        print(f"Error: Invalid input type for classify_image: {type(image_path_or_object)}")
+        # pil_img remains None
+
+    if pil_img is None:
+        # Handle cases where image loading failed or input was invalid or object wasn't an image
         return {
             "predictions": [
                 {
@@ -52,6 +65,10 @@ def classify_image(image_path):
                 }
             ]
         }
+
+    # Ensure image is RGB before transform (might be redundant if loaded correctly)
+    if pil_img.mode != 'RGB':
+        pil_img = pil_img.convert('RGB')
 
     image = transform(pil_img).unsqueeze(0).to(device)
 
@@ -336,8 +353,7 @@ def main():
     # --- Define specific adjustment parameters --- 
     contrast_values = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75]
     brightness_values = [0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
-    # Use odd kernel sizes for blur
-    blur_values = [3, 5, 7, 9, 11] # Kernel sizes must be positive odd integers
+    blur_values = [3, 5, 7, 9, 11]
     color_values = [
         {"red": 0.8, "green": 1.0, "blue": 1.2},
         {"red": 0.9, "green": 1.0, "blue": 1.1},
