@@ -4,19 +4,11 @@ import cv2
 import os
 
 
-def calculate_psnr(image_path, data_range=None):
-    # Read the input image
-    image = cv2.imread(image_path)
-    if image is None:
-        raise ValueError(f"Could not read image at {image_path}")
-
-    # Construct reference image path
-    ref_path = os.path.splitext(image_path)[0] + '_ref' + os.path.splitext(image_path)[1]
-    ref_image = cv2.imread(ref_path)
-
-    if ref_image is None:
-        raise ValueError(f"Could not read reference image at {ref_path}")
-
+def calculate_psnr(image, ref_image, data_range=None):
+    """Calculate PSNR between two images (NumPy arrays)."""
+    # Basic validation
+    if image is None or ref_image is None:
+        raise ValueError("Input images cannot be None")
     if image.shape != ref_image.shape:
         raise ValueError(f"Input images must have the same shape. "
                          f"Got {image.shape} and {ref_image.shape}")
@@ -52,16 +44,26 @@ if __name__ == '__main__':
     img2 = img1.copy()
     img2[50:60, 50:60, :] = 210  # Introduce some difference
 
-    # Calculate PSNR
-    psnr_val = calculate_psnr(img1)
-    print(f"PSNR between img1 and img2: {psnr_val:.2f} dB")
+    # Calculate PSNR directly with arrays
+    try:
+        psnr_val = calculate_psnr(img2, img1)
+        print(f"PSNR between img2 and img1: {psnr_val:.2f} dB")
+    except ValueError as e:
+        print(f"Error calculating PSNR: {e}")
 
     # Identical images
-    psnr_identical = calculate_psnr(img1)
-    print(f"PSNR between identical images: {psnr_identical}")  # Should be inf
+    try:
+        psnr_identical = calculate_psnr(img1, img1)
+        print(f"PSNR between identical images: {psnr_identical}") # Should be inf
+    except ValueError as e:
+        print(f"Error calculating PSNR for identical images: {e}")
 
     # Test with float images
     img_float1 = img1.astype(np.float32) / 255.0
     img_float2 = img2.astype(np.float32) / 255.0
-    psnr_float = calculate_psnr(img_float1)  # data_range should default to 1.0
-    print(f"PSNR between float images: {psnr_float:.2f} dB")
+    try:
+        # Note: For float images in [0, 1], data_range is usually 1.0 (automatically determined)
+        psnr_float = calculate_psnr(img_float2, img_float1)
+        print(f"PSNR between float images: {psnr_float:.2f} dB")
+    except ValueError as e:
+        print(f"Error calculating PSNR for float images: {e}")

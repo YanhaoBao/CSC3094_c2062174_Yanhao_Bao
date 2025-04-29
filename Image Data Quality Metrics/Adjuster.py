@@ -15,8 +15,8 @@ class ImageParameterAdjuster:
         return self.current_image
 
     def adjust_brightness(self, factor):
-        if not 0.0 <= factor <= 2.0:
-            raise ValueError("Brightness factor must be between 0.0 and 2.0")
+        if not 0.0 <= factor <= 4.0:
+            raise ValueError("Brightness factor must be between 0.0 and 4.0")
 
         adjusted = cv2.convertScaleAbs(self.current_image, alpha=factor, beta=0)
         self.current_image = adjusted
@@ -24,8 +24,8 @@ class ImageParameterAdjuster:
         return adjusted
 
     def adjust_contrast(self, factor):
-        if not 0.0 <= factor <= 2.0:
-            raise ValueError("Contrast factor must be between 0.0 and 2.0")
+        if not 0.5 <= factor <= 3.0:
+            raise ValueError("Contrast factor must be between 0.5 and 3.0")
 
         mean_intensity = np.mean(self.current_image)
         adjusted = np.clip(factor * (self.current_image - mean_intensity) + mean_intensity, 0, 255).astype(np.uint8)
@@ -71,8 +71,8 @@ class ImageParameterAdjuster:
         gains = [blue_gain, green_gain, red_gain]
 
         for gain in gains:
-            if not 0.0 <= gain <= 2.0:
-                raise ValueError("Color gain must be between 0.0 and 2.0")
+            if not 0.0 <= gain <= 4.0:
+                raise ValueError("Color gain must be between 0.0 and 4.0")
 
         adjusted = self.current_image.copy().astype(np.float32)
         for c in range(3):
