@@ -98,12 +98,22 @@ def process_image(image_path, is_adjusted=False, adjustment_params=None):
 
     # Calculate SSIM and PSNR
     ref_path = os.path.splitext(image_path)[0] + '_ref' + os.path.splitext(image_path)[1]
+    ssim_res = None  # Initialize to None
+    PSNR_res = None  # Initialize to None
     if os.path.exists(ref_path):
-        ssim_res = SSIM.calculate_ssim(image_path)
-        PSNR_res = PSNR.calculate_psnr(image_path)
+        ref_img = cv2.imread(ref_path)
+        if ref_img is None:
+            print(f"Warning: Could not read reference image at {ref_path}. Skipping SSIM/PSNR.")
+        elif img.shape != ref_img.shape:
+            print(f"Warning: Image shape {img.shape} and reference shape {ref_img.shape} mismatch for {image_path}. Skipping SSIM/PSNR.")
+            # Optionally, resize one image to match the other here if desired
+            # Example: ref_img = cv2.resize(ref_img, (img.shape[1], img.shape[0])) 
+        else:
+            # Only calculate if both images are loaded successfully and shapes match
+            ssim_res = SSIM.calculate_ssim(img, ref_img)  # Pass image arrays
+            PSNR_res = PSNR.calculate_psnr(img, ref_img)  # Pass image arrays
     else:
-        ssim_res = None
-        PSNR_res = None
+        print(f"Warning: Reference image not found at {ref_path}. Skipping SSIM/PSNR.") # Added warning for missing ref
 
     # Brightness
     b_mean = Brightness.mean(img)
