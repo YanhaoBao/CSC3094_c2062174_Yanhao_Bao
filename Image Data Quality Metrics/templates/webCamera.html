@@ -14,7 +14,7 @@
         }
         .container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* Keep 2 columns */
             gap: 20px;
             padding: 20px;
             max-width: 1200px;
@@ -35,6 +35,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 240px; /* Ensure minimum height for video area */
         }
         .video-container img {
             max-width: 100%;
@@ -45,13 +46,18 @@
             padding: 10px 15px;
             border-top: 1px solid #eee;
         }
+        .control-grid { /* Use grid for better layout of multiple controls */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid */
+            gap: 10px 15px;
+        }
         .control-group {
-            margin: 8px 0;
+            margin-bottom: 5px; /* Reduced margin for tighter grid */
         }
         .control-label {
-            font-size: 13px;
+            font-size: 12px; /* Smaller label */
             color: #666;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             display: block;
         }
         input[type="range"] {
@@ -61,18 +67,22 @@
         }
         .prediction {
             background: #f8f9fa;
-            padding: 12px;
-            font-size: 14px;
+            padding: 10px; /* Slightly reduced padding */
+            font-size: 13px; /* Smaller font */
             color: #2ecc71;
             text-align: center;
             border-top: 1px solid #eee;
+            min-height: 38px; /* Ensure consistent height */
+            display: flex; /* Center content vertically */
+            align-items: center;
+            justify-content: center;
         }
         .dashboard {
             display: flex;
             flex-direction: column;
             padding: 20px;
         }
-        
+
         .chart-container {
             width: 95%;
             margin: 20px auto;
@@ -80,104 +90,133 @@
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Span both columns */
         }
 
         #performanceChart {
             height: 400px !important;
             transition: opacity 0.3s ease;
         }
+
+        /* Style for active chart button */
+        .chart-controls button.active {
+            font-weight: bold;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .chart-controls button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .chart-controls button:hover {
+             background-color: #eee;
+        }
+
+        /* Style for metrics display */
+        .metrics-display {
+            padding: 5px 15px;
+            font-size: 11px; /* Smaller font */
+            color: #555;
+            background-color: #fdfdfd;
+            border-top: 1px solid #eee;
+            text-align: center;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around; /* Distribute space */
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 10px; /* Space between metrics */
+        }
+        .metrics-display span { /* Style individual metric values */
+             font-weight: bold;
+             color: #333;
+             margin-left: 3px; /* Small space after label */
+        }
+        .metric-item { /* Wrap label and value */
+            white-space: nowrap; /* Prevent label/value breaking */
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Origin -->
+        <!-- Origin View -->
         <div class="view-box">
+            <h3 style="text-align: center; padding: 8px; background: #eee; font-size: 14px;">Original</h3>
             <div class="video-container">
-                <img src="{{ url_for('video_feed', name='original') }}">
+                <img src="{{ url_for('video_feed', name='original') }}" alt="Original Feed">
             </div>
-            <div class="prediction" id="pred-original"></div>
+            <!-- Metrics Display Area -->
+            <div class="metrics-display" id="metrics-original">
+                <div class="metric-item">Loading...</div>
+            </div>
+            <div class="prediction" id="pred-original">N/A</div>
         </div>
 
-        <!-- brightness -->
+        <!-- Adjustable View -->
         <div class="view-box">
+             <h3 style="text-align: center; padding: 8px; background: #eee; font-size: 14px;">Adjustable</h3>
             <div class="video-container">
-                <img src="{{ url_for('video_feed', name='low_light') }}">
+                <img src="{{ url_for('video_feed', name='adjustable') }}" alt="Adjustable Feed">
             </div>
             <div class="controls">
-                <div class="control-group">
-                    <label class="control-label">Brightness (0.0-4.0):</label>
-                    <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
-                           oninput="updateParam('low_light', 'brightness', this.value)">
+                <div class="control-grid"> <!-- Changed to control-grid -->
+                    <!-- Brightness -->
+                    <div class="control-group">
+                        <label class="control-label">Brightness (0.0-4.0):</label>
+                        <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
+                               oninput="updateParam('adjustable', 'brightness', this.value)">
+                    </div>
+                    <!-- Blur -->
+                    <div class="control-group">
+                        <label class="control-label">Blur (1-31):</label>
+                        <input type="range" min="1" max="31" step="2" value="1"
+                               oninput="updateParam('adjustable', 'blur_size', this.value)">
+                    </div>
+                     <!-- Contrast -->
+                    <div class="control-group">
+                        <label class="control-label">Contrast (0.5-3.0):</label>
+                        <input type="range" min="0.5" max="3.0" step="0.1" value="1.0"
+                               oninput="updateParam('adjustable', 'contrast_factor', this.value)">
+                    </div>
+                    <!-- Red Gain -->
+                    <div class="control-group">
+                        <label class="control-label">Red (0.0-4.0):</label>
+                        <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
+                               oninput="updateParam('adjustable', 'red_gain', this.value)">
+                    </div>
+                    <!-- Green Gain -->
+                    <div class="control-group">
+                        <label class="control-label">Green (0.0-4.0):</label>
+                        <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
+                               oninput="updateParam('adjustable', 'green_gain', this.value)">
+                    </div>
+                    <!-- Blue Gain -->
+                    <div class="control-group">
+                        <label class="control-label">Blue (0.0-4.0):</label>
+                        <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
+                               oninput="updateParam('adjustable', 'blue_gain', this.value)">
+                    </div>
                 </div>
             </div>
-            <div class="prediction" id="pred-low_light"></div>
-        </div>
-
-        <!-- Blur -->
-        <div class="view-box">
-            <div class="video-container">
-                <img src="{{ url_for('video_feed', name='blurry') }}">
-            </div>
-            <div class="controls">
-                <div class="control-group">
-                    <label class="control-label">Blur (1,3,5...31):</label>
-                    <input type="range" min="1" max="31" step="2" value="1"
-                           oninput="updateParam('blurry', 'blur_size', this.value)">
-                </div>
-            </div>
-            <div class="prediction" id="pred-blurry"></div>
-        </div>
-
-        <!-- Color -->
-        <div class="view-box">
-            <div class="video-container">
-                <img src="{{ url_for('video_feed', name='color_balance') }}">
-            </div>
-            <div class="controls">
-                <div class="control-group">
-                    <label class="control-label">Red (0.0-4.0):</label>
-                    <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
-                           oninput="updateParam('color_balance', 'red_gain', this.value)">
-                </div>
-                <div class="control-group">
-                    <label class="control-label">Green (0.0-4.0):</label>
-                    <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
-                           oninput="updateParam('color_balance', 'green_gain', this.value)">
-                </div>
-                <div class="control-group">
-                    <label class="control-label">Blue (0.0-4.0):</label>
-                    <input type="range" min="0.0" max="4.0" step="0.1" value="1.0"
-                           oninput="updateParam('color_balance', 'blue_gain', this.value)">
-                </div>
-            </div>
-            <div class="prediction" id="pred-color_balance"></div>
-        </div>
-
-        <!-- Contrast -->
-        <div class="view-box">
-            <div class="video-container">
-                <img src="{{ url_for('video_feed', name='contrast') }}">
-            </div>
-            <div class="controls">
-                <div class="control-group">
-                    <label class="control-label">Contrast (0.5-3.0):</label>
-                    <input type="range" min="0.5" max="3.0" step="0.1" value="1.0"
-                           oninput="updateParam('contrast', 'contrast_factor', this.value)">
-                </div>
-            </div>
-            <div class="prediction" id="pred-contrast"></div>
+             <!-- Metrics Display Area for Adjustable (Optional, can be added similarly if needed) -->
+             <div class="metrics-display" id="metrics-adjustable">
+                 <div class="metric-item">SSIM: <span>Loading...</span></div>
+             </div>
+            <div class="prediction" id="pred-adjustable">N/A</div>
         </div>
     </div>
 
-    <!-- Add the chart container here -->
+    <!-- Chart container remains below the grid -->
     <div class="chart-container">
         <div class="chart-controls" style="text-align: center; margin-bottom: 15px;">
-            <button onclick="setChartProcessor('original')">Original</button>
-            <button onclick="setChartProcessor('low_light')">Brightness</button>
-            <button onclick="setChartProcessor('blurry')">Blur</button>
-            <button onclick="setChartProcessor('color_balance')">Color</button>
-            <button onclick="setChartProcessor('contrast')">Contrast</button>
+            <!-- Updated Buttons -->
+            <button onclick="setChartProcessor('original')" class="active">Original</button>
+            <button onclick="setChartProcessor('adjustable')">Adjustable</button>
         </div>
         <canvas id="performanceChart"></canvas>
     </div>
@@ -186,29 +225,110 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon@2.3.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0"></script>
     <script>
-        function updateParam(name, param, value) {
+        // Debounce function to limit update frequency
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Debounced updateParam function
+        const debouncedUpdateParam = debounce((name, param, value) => {
             fetch('/update', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ name, param, value: parseFloat(value) })
+            }).catch(console.error); // Add basic error handling
+        }, 50); // Debounce by 50ms
+
+        // Use the debounced version in the event handler
+        function updateParam(name, param, value) {
+            debouncedUpdateParam(name, param, value);
+        }
+
+        let predictionIntervalId = null; // Store interval ID
+        function refreshPredictions() {
+             // Prevent multiple intervals running
+            if (predictionIntervalId) clearTimeout(predictionIntervalId);
+
+            fetch('/predictions')
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    // Update predictions only for existing elements
+                    if(document.getElementById('pred-original')) {
+                        document.getElementById('pred-original').textContent = data.original || 'N/A';
+                    }
+                    if(document.getElementById('pred-adjustable')) {
+                         document.getElementById('pred-adjustable').textContent = data.adjustable || 'N/A';
+                    }
+                })
+                .catch(error => console.error("Error refreshing predictions:", error))
+                .finally(() => {
+                     // Schedule the next fetch
+                    predictionIntervalId = setTimeout(refreshPredictions, 300);
+                });
+        }
+
+        let latestMetricsIntervalId = null; // Store interval ID for latest metrics
+        function refreshLatestMetrics() {
+            // Prevent multiple intervals running
+            if (latestMetricsIntervalId) clearTimeout(latestMetricsIntervalId);
+
+            // Fetch latest metrics for both streams in parallel
+            Promise.all([
+                fetch('/latest_metrics/original').then(res => res.ok ? res.json() : Promise.reject('Original fetch failed')),
+                fetch('/latest_metrics/adjustable').then(res => res.ok ? res.json() : Promise.reject('Adjustable fetch failed'))
+            ])
+            .then(([originalData, adjustableData]) => {
+                // Update Original Metrics Display
+                const metricsOriginalDiv = document.getElementById('metrics-original');
+                if (metricsOriginalDiv) {
+                    let html = '';
+                    html += `<div class="metric-item">Brightness: <span>${originalData.measured_brightness !== null ? originalData.measured_brightness : 'N/A'}</span></div>`;
+                    html += `<div class="metric-item">Contrast: <span>${originalData.measured_contrast !== null ? originalData.measured_contrast : 'N/A'}</span></div>`;
+                    html += `<div class="metric-item">Sharpness (LapVar): <span>${originalData.measured_sharpness !== null ? originalData.measured_sharpness : 'N/A'}</span></div>`;
+                    html += `<div class="metric-item">Avg R: <span>${originalData.measured_avg_red !== null ? originalData.measured_avg_red : 'N/A'}</span></div>`;
+                    html += `<div class="metric-item">Avg G: <span>${originalData.measured_avg_green !== null ? originalData.measured_avg_green : 'N/A'}</span></div>`;
+                    html += `<div class="metric-item">Avg B: <span>${originalData.measured_avg_blue !== null ? originalData.measured_avg_blue : 'N/A'}</span></div>`;
+                    metricsOriginalDiv.innerHTML = html;
+                }
+
+                // Update Adjustable Metrics Display (mainly SSIM/PSNR calculated against original)
+                const metricsAdjustableDiv = document.getElementById('metrics-adjustable');
+                 if (metricsAdjustableDiv) {
+                    let ssimText = adjustableData.ssim !== null ? adjustableData.ssim : 'N/A';
+                    let psnrText = adjustableData.psnr !== null ? adjustableData.psnr : 'N/A';
+                    metricsAdjustableDiv.innerHTML = 
+                        `<div class="metric-item">SSIM: <span>${ssimText}</span></div>` +
+                        `<div class="metric-item">PSNR: <span>${psnrText}</span></div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching latest metrics:', error);
+                // Update both displays to show error state
+                 const metricsOriginalDiv = document.getElementById('metrics-original');
+                 const metricsAdjustableDiv = document.getElementById('metrics-adjustable');
+                 if (metricsOriginalDiv) metricsOriginalDiv.innerHTML = `<div class="metric-item">Error loading metrics</div>`;
+                 if (metricsAdjustableDiv) metricsAdjustableDiv.innerHTML = `<div class="metric-item">Error loading metrics</div>`;
+            })
+            .finally(() => {
+                // Schedule the next fetch
+                latestMetricsIntervalId = setTimeout(refreshLatestMetrics, 500); // Refresh every 500ms
             });
         }
 
-        function refreshPredictions() {
-            fetch('/predictions')
-                .then(res => res.json())
-                .then(data => {
-                    Object.entries(data).forEach(([name, pred]) => {
-                        document.getElementById(`pred-${name}`).textContent = pred;
-                    });
-                })
-                .catch(console.error);
-            setTimeout(refreshPredictions, 300);
-        }
-        refreshPredictions();
-
         // Chart specific code
         let currentChartProcessor = 'original'; // Default view for the chart
+        let metricsHistoryIntervalId = null; // Store interval ID for metrics history
         const MAX_CHART_POINTS = 100; // Limit number of points on chart
 
         const ctx = document.getElementById('performanceChart').getContext('2d');
@@ -225,23 +345,23 @@
                         yAxisID: 'yAccuracy', // Dedicated axis for accuracy (0-1)
                         hidden: false // Always show accuracy
                     },
-                    // Parameters - initially hidden, shown based on currentChartProcessor
+                    // Parameters - now all potentially belong to 'adjustable'
                     {
                         label: 'Brightness',
                         data: [],
                         borderColor: '#FFEB3B', // Yellow
                         backgroundColor: 'rgba(255, 235, 59, 0.1)',
                         tension: 0.3,
-                        yAxisID: 'yParams1', // Axis for 0-4 range
-                        hidden: true
+                        yAxisID: 'yParams1', // Axis for 0-4 range (PARAM)
+                        hidden: true // Initially hidden
                     },
                     {
-                        label: 'Blur Size', // Corresponds to gaussian_blur
+                        label: 'Blur Size', // Corresponds to gaussian_blur (PARAM)
                         data: [],
                         borderColor: '#9C27B0', // Purple
                         backgroundColor: 'rgba(156, 39, 176, 0.1)',
                         tension: 0.3,
-                        yAxisID: 'yParams2', // Axis for blur (0-35)
+                        yAxisID: 'yParams2', // Axis for blur (0-35) (PARAM)
                         hidden: true
                     },
                     {
@@ -250,7 +370,7 @@
                         borderColor: '#F44336', // Red
                         backgroundColor: 'rgba(244, 67, 54, 0.1)',
                         tension: 0.3,
-                        yAxisID: 'yParams1', // Axis for 0-4 range
+                        yAxisID: 'yParams1', // Axis for 0-4 range (PARAM)
                         hidden: true
                     },
                      {
@@ -259,7 +379,7 @@
                         borderColor: '#8BC34A', // Light Green
                         backgroundColor: 'rgba(139, 195, 74, 0.1)',
                         tension: 0.3,
-                        yAxisID: 'yParams1', // Axis for 0-4 range
+                        yAxisID: 'yParams1', // Axis for 0-4 range (PARAM)
                         hidden: true
                     },
                      {
@@ -268,16 +388,71 @@
                         borderColor: '#2196F3', // Blue
                         backgroundColor: 'rgba(33, 150, 243, 0.1)',
                         tension: 0.3,
-                        yAxisID: 'yParams1', // Axis for 0-4 range
+                        yAxisID: 'yParams1', // Axis for 0-4 range (PARAM)
                         hidden: true
                     },
                     {
-                        label: 'Contrast', // Corresponds to contrast_factor
+                        label: 'Contrast', // Corresponds to contrast_factor (PARAM)
                         data: [],
                         borderColor: '#FF9800', // Orange
                         backgroundColor: 'rgba(255, 152, 0, 0.1)',
                         tension: 0.3,
-                        yAxisID: 'yParams1', // Axis for 0-4 range (contrast is 0.5-3.0)
+                        yAxisID: 'yParams1', // Axis for 0-4 range (PARAM)
+                        hidden: true
+                    },
+                    // --- Measured Values Datasets (for Original stream) ---
+                    {
+                        label: 'Measured Brightness',
+                        data: [],
+                        borderColor: '#D1C4E9', // Lighter Purple
+                        backgroundColor: 'rgba(209, 196, 233, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'yMeasuredBC', // Axis for measured Brightness/Contrast (0-255)
+                        hidden: true
+                    },
+                    {
+                        label: 'Measured Contrast',
+                        data: [],
+                        borderColor: '#FFCC80', // Lighter Orange
+                        backgroundColor: 'rgba(255, 204, 128, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'yMeasuredBC', // Axis for measured Brightness/Contrast (0-255)
+                        hidden: true
+                    },
+                    {
+                        label: 'Sharpness (LapVar)',
+                        data: [],
+                        borderColor: '#607D8B', // Blue Grey
+                        backgroundColor: 'rgba(96, 125, 139, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'yMeasuredSharpness',
+                        hidden: true
+                    },
+                    {
+                        label: 'Measured Avg Red',
+                        data: [],
+                        borderColor: '#EF9A9A', // Lighter Red
+                        backgroundColor: 'rgba(239, 154, 154, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'yMeasuredColor', // Axis for measured Color (0-255)
+                        hidden: true
+                    },
+                    {
+                        label: 'Measured Avg Green',
+                        data: [],
+                        borderColor: '#A5D6A7', // Lighter Green
+                        backgroundColor: 'rgba(165, 214, 167, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'yMeasuredColor', // Axis for measured Color (0-255)
+                        hidden: true
+                    },
+                     {
+                        label: 'Measured Avg Blue',
+                        data: [],
+                        borderColor: '#90CAF9', // Lighter Blue
+                        backgroundColor: 'rgba(144, 202, 249, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'yMeasuredColor', // Axis for measured Color (0-255)
                         hidden: true
                     },
                 ]
@@ -299,26 +474,54 @@
                             text: 'Time'
                         }
                     },
+                    // -- Standard Axes --
                     yAccuracy: { // Axis for Accuracy (0-1)
                         position: 'left',
                         title: { display: true, text: 'Accuracy' },
                         min: 0,
                         max: 1
                     },
-                    yParams1: { // Axis for Brightness, Gains, Contrast (0-4)
+                    // -- Parameter Axes (Adjustable) --
+                    yParams1: { // Axis for PARAM Brightness, Gains, Contrast (0-4)
                         position: 'right',
-                        title: { display: true, text: 'Parameter Value (0-4)' },
+                        title: { display: true, text: 'Param Value (0-4)' },
                         min: 0,
                         max: 4,
-                         grid: { drawOnChartArea: false } // Only show grid for primary y axis (Accuracy)
+                         grid: { drawOnChartArea: false },
+                         display: false // Initially hidden
                     },
-                    yParams2: { // Axis for Blur Size (0-35)
+                    yParams2: { // Axis for PARAM Blur Size (0-35)
                          position: 'right',
-                         title: { display: true, text: 'Blur Size (1-31)'},
+                         title: { display: true, text: 'Param Blur (1-31)'},
                          min: 0,
                          max: 35, // Range is 1-31, give some buffer
                          grid: { drawOnChartArea: false },
-                         // Ensure axes don't overlap badly if both are displayed (though usually only one will be)
+                         display: false // Initially hidden
+                    },
+                    // -- Measured Axes (Original) --
+                     yMeasuredBC: { // Axis for MEASURED Brightness & Contrast (0-255)
+                         position: 'right',
+                         title: { display: true, text: 'Measured B/C (0-255)'},
+                         min: 0,
+                         max: 255,
+                         grid: { drawOnChartArea: false },
+                         display: false // Initially hidden
+                    },
+                     yMeasuredColor: { // Axis for MEASURED Avg Color (0-255)
+                         position: 'right',
+                         title: { display: true, text: 'Measured Color (0-255)'},
+                         min: 0,
+                         max: 255,
+                         grid: { drawOnChartArea: false },
+                         display: false // Initially hidden
+                    },
+                    yMeasuredSharpness: {
+                         position: 'right',
+                         title: { display: true, text: 'Sharpness (LapVar)'},
+                         min: 0,
+                         max: 1000,
+                         grid: { drawOnChartArea: false },
+                         display: false
                     }
                 },
                 plugins: {
@@ -332,7 +535,11 @@
             }
         });
 
-        function refreshMetrics() {
+        // Renamed from refreshMetrics to avoid confusion with latest metrics
+        function refreshMetricsHistory() {
+            // Prevent multiple intervals running
+            if (metricsHistoryIntervalId) clearTimeout(metricsHistoryIntervalId);
+
             fetch(`/metrics_history/${currentChartProcessor}`)
                 .then(response => {
                     if (!response.ok) {
@@ -342,7 +549,7 @@
                 })
                 .then(data => {
                     if (!data || !data.timestamps) {
-                        console.error("Invalid data received from /metrics_history");
+                        console.error("Invalid data received from /metrics_history for:", currentChartProcessor);
                         return;
                     }
 
@@ -350,100 +557,144 @@
 
                     // --- Helper to format data for chart --- 
                     const formatChartData = (values) => {
+                        if (!Array.isArray(values)) return []; // Ensure values is an array
                         const chartData = [];
-                        for (let i = 0; i < timestampsMs.length; i++) {
-                             // Handle potential null/inf values for PSNR if needed (though we don't plot PSNR now)
-                            // Also handle nulls for parameters if they occur
+                        const numPoints = Math.min(timestampsMs.length, values.length);
+                        for (let i = 0; i < numPoints; i++) {
                             if (values[i] !== null && values[i] !== undefined && isFinite(values[i])) {
                                 chartData.push({ x: timestampsMs[i], y: values[i] });
-                            } else {
-                                 // Decide how to plot null/inf: skip, plot at 0, or use NaN
-                                 // chartData.push({ x: timestampsMs[i], y: NaN }); // Option: Use NaN to create gaps
                             }
+                            // Optionally handle null/undefined/infinite values here if needed
                         }
                         // Limit data points for performance
                         return chartData.slice(-MAX_CHART_POINTS);
                     };
 
-                    // --- Update Accuracy Dataset --- 
-                    chart.data.datasets[0].data = formatChartData(data.probability || []); // Dataset 0 is Accuracy
-                    chart.data.datasets[0].hidden = false; // Always show accuracy
+                    // --- Update Accuracy Dataset (Always visible) --- 
+                    chart.data.datasets[0].data = formatChartData(data.probability);
+                    chart.data.datasets[0].hidden = false;
 
-                    // --- Define Parameter Mappings --- 
-                    // Maps backend data key to chart dataset index and the processor it belongs to
+                    // --- Define Parameter Mappings (Adjustable) --- 
                     const parameterMappings = {
-                        "brightness": { datasetIndex: 1, processor: 'low_light' },
-                        "gaussian_blur": { datasetIndex: 2, processor: 'blurry' },
-                        "red_gain": { datasetIndex: 3, processor: 'color_balance' },
-                        "green_gain": { datasetIndex: 4, processor: 'color_balance' },
-                        "blue_gain": { datasetIndex: 5, processor: 'color_balance' },
-                        "contrast_factor": { datasetIndex: 6, processor: 'contrast' }
+                        // backend_key: { datasetIndex, axisId }
+                        "brightness":      { datasetIndex: 1, axisId: 'yParams1' },
+                        "gaussian_blur":   { datasetIndex: 2, axisId: 'yParams2' },
+                        "red_gain":        { datasetIndex: 3, axisId: 'yParams1' },
+                        "green_gain":      { datasetIndex: 4, axisId: 'yParams1' },
+                        "blue_gain":       { datasetIndex: 5, axisId: 'yParams1' },
+                        "contrast_factor": { datasetIndex: 6, axisId: 'yParams1' }
+                    };
+                    
+                    // --- Define Measured Value Mappings (Original) --- 
+                    const measuredMappings = {
+                         // backend_key: { datasetIndex, axisId }
+                         "measured_brightness": { datasetIndex: 7, axisId: 'yMeasuredBC' },
+                         "measured_contrast":   { datasetIndex: 8, axisId: 'yMeasuredBC' },
+                         "measured_sharpness":  { datasetIndex: 9, axisId: 'yMeasuredSharpness' },
+                         "measured_avg_red":    { datasetIndex: 10, axisId: 'yMeasuredColor' },
+                         "measured_avg_green":  { datasetIndex: 11, axisId: 'yMeasuredColor' },
+                         "measured_avg_blue":   { datasetIndex: 12, axisId: 'yMeasuredColor' }
                     };
 
-                    // --- Update Parameter Datasets --- 
-                    Object.entries(parameterMappings).forEach(([paramKey, config]) => {
-                        const dataset = chart.data.datasets[config.datasetIndex];
-                        // Show dataset only if its processor matches the current view AND data exists in the response
-                        if (config.processor === currentChartProcessor && data[paramKey]) {
-                            dataset.data = formatChartData(data[paramKey]);
-                            dataset.hidden = false;
-                        } else {
-                            // Hide dataset if processor doesn't match or data is missing
-                            dataset.data = []; // Clear data when hidden
-                            dataset.hidden = true;
-                        }
-                    });
+                    // --- Flags for Axis Visibility --- 
+                    let showParams1Axis = false;
+                    let showParams2Axis = false;
+                    let showMeasuredBCAxis = false;
+                    let showMeasuredColorAxis = false;
+                    let showMeasuredSharpnessAxis = false;
 
-                    // --- Dynamic Axis Adjustment --- 
-                    const yParams1Axis = chart.options.scales.yParams1;
-                    const yParams2Axis = chart.options.scales.yParams2;
+                    // --- Update Datasets based on Current Processor --- 
+                    if (currentChartProcessor === 'original') {
+                        // Hide Parameter datasets
+                        Object.values(parameterMappings).forEach(config => {
+                            chart.data.datasets[config.datasetIndex].hidden = true;
+                            chart.data.datasets[config.datasetIndex].data = [];
+                        });
+                        // Show Measured datasets
+                        Object.entries(measuredMappings).forEach(([dataKey, config]) => {
+                             const dataset = chart.data.datasets[config.datasetIndex];
+                             if (data[dataKey]) {
+                                 dataset.data = formatChartData(data[dataKey]);
+                                 dataset.hidden = false;
+                                 // Mark axes for visibility
+                                 if (config.axisId === 'yMeasuredBC') showMeasuredBCAxis = true;
+                                 if (config.axisId === 'yMeasuredColor') showMeasuredColorAxis = true;
+                                 if (config.axisId === 'yMeasuredSharpness') showMeasuredSharpnessAxis = true;
+                             } else {
+                                 dataset.hidden = true; // Hide if data missing
+                                 dataset.data = [];
+                             }
+                        });
+                    } else { // currentChartProcessor === 'adjustable'
+                        // Hide Measured datasets
+                        Object.values(measuredMappings).forEach(config => {
+                            chart.data.datasets[config.datasetIndex].hidden = true;
+                            chart.data.datasets[config.datasetIndex].data = [];
+                        });
+                        // Show Parameter datasets
+                         Object.entries(parameterMappings).forEach(([dataKey, config]) => {
+                            const dataset = chart.data.datasets[config.datasetIndex];
+                             if (data[dataKey]) {
+                                dataset.data = formatChartData(data[dataKey]);
+                                dataset.hidden = false;
+                                // Mark axes for visibility
+                                if (config.axisId === 'yParams1') showParams1Axis = true;
+                                if (config.axisId === 'yParams2') showParams2Axis = true;
+                            } else {
+                                dataset.hidden = true; // Hide if data missing
+                                dataset.data = [];
+                            }
+                        });
+                    }
 
-                    // Check if any dataset using yParams1 is visible
-                    const isParams1Visible = chart.data.datasets.some((ds) => 
-                        ds.yAxisID === 'yParams1' && !ds.hidden
-                    );
-                    // Check if the dataset using yParams2 (Blur) is visible
-                    const isParams2Visible = !chart.data.datasets[2].hidden; 
-
-                    yParams1Axis.display = isParams1Visible;
-                    yParams2Axis.display = isParams2Visible;
+                    // --- Update Axis Visibility --- 
+                    chart.options.scales.yParams1.display = showParams1Axis;
+                    chart.options.scales.yParams2.display = showParams2Axis;
+                    chart.options.scales.yMeasuredBC.display = showMeasuredBCAxis;
+                    chart.options.scales.yMeasuredColor.display = showMeasuredColorAxis;
+                    chart.options.scales.yMeasuredSharpness.display = showMeasuredSharpnessAxis;
 
                     // Update chart without animation
-                    chart.update('none'); 
+                    chart.update('none');
                 })
                 .catch(error => {
-                    console.error('Error fetching metrics:', error);
+                    console.error(`Error fetching metrics history for ${currentChartProcessor}:`, error);
+                })
+                .finally(() => {
+                    // Schedule the next fetch
+                    metricsHistoryIntervalId = setTimeout(refreshMetricsHistory, 1000); 
                 });
-            
-            // Fetch new data every second
-             setTimeout(refreshMetrics, 1000); 
         }
 
         // Function to change the processor view for the chart
         function setChartProcessor(processorName) {
+            if (currentChartProcessor === processorName) return; // No change needed
+
             currentChartProcessor = processorName;
-            // Optional: Add visual feedback to highlight the active button
+
+            // Update button styles
             document.querySelectorAll('.chart-controls button').forEach(button => {
-                if (button.textContent.toLowerCase() === processorName.split('_')[0] || 
-                   (processorName === 'original' && button.textContent === 'Original') ||
-                   (processorName === 'low_light' && button.textContent === 'Brightness')) { // Handle name mismatch
-                    button.style.fontWeight = 'bold';
-                    button.style.borderBottom = '2px solid #4CAF50';
+                // Check button text content roughly matches processor name
+                const buttonTextLower = button.textContent.toLowerCase();
+                const processorNameLower = processorName.toLowerCase();
+                if (buttonTextLower === processorNameLower) {
+                    button.classList.add('active');
                 } else {
-                    button.style.fontWeight = 'normal';
-                    button.style.borderBottom = 'none';
+                    button.classList.remove('active');
                 }
             });
+
             console.log("Chart showing data for:", currentChartProcessor);
-            // Don't wait for timeout, refresh immediately
-            // Clear previous timeout to avoid duplicate calls if button clicked rapidly
-            // (Need to store timeout ID for this - let's skip for now, 1s interval is okay)
-             refreshMetrics(); 
+
+            // Clear existing timeout and fetch new data immediately for the chart history
+            if (metricsHistoryIntervalId) clearTimeout(metricsHistoryIntervalId);
+            refreshMetricsHistory(); // Use the renamed function
         }
 
-        // Initial call to start fetching metrics and set initial button state
-        refreshMetrics();
-        setChartProcessor(currentChartProcessor); // Set initial button style
+        // Initial setup
+        refreshPredictions(); // Start prediction refresh loop
+        refreshLatestMetrics(); // Start latest metrics refresh loop
+        setChartProcessor(currentChartProcessor); // Set initial chart state and trigger first history fetch
 
     </script>
 </body>
