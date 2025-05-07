@@ -15,7 +15,7 @@ import warnings
 app = Flask(__name__)
 lock = threading.Lock()
 
-IMG_SIZE = (640, 480)
+IMG_SIZE = (320, 240)
 REFRESH_RATE = 0.15
 HISTORY_LENGTH = 10000
 CLASSIFICATION_INTERVAL = 0.5
