@@ -8,4 +8,5 @@ requests
 tqdm
 Pillow
 numpy
-Flask 
+Flask
+scikit-image
